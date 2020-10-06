@@ -1,0 +1,59 @@
+/*Code written by Richard W. Webster*/
+/*Utilization of Check Lines for Screening Additional Soybean Lines*/
+
+/*creation of AUDPC values from lesion length measurements across three timepoints (7, 11, and 14 days post inoculation)*/
+data a; set addscreen; if measurement=1; rename lesion=lesion1; proc sort; by run rep cultivar;	
+data b; set addscreen; if measurement=2; rename lesion=lesion2; proc sort; by run rep cultivar;	
+data c; set addscreen; if measurement=3; rename lesion=lesion3; proc sort; by run rep cultivar;	
+data all2; merge a b c; by run rep cultivar;	
+delta1=(lesion1/2); delta2=((lesion2+lesion1)/2)*4; delta3=((lesion3+lesion2)/2)*3;	
+audpc=delta1+delta2+delta3;	
+
+/*Analysis of AUDPC*/
+    /*Soybean Genotype Main Effect*/
+    %include '.../mult.sas';
+    Proc glimmix data=all2 plots=studentpanel nobound;	
+    ods output lsmeans=lsmeans diffs=diffs;	
+    class run rep cultivar;	
+    model AUDPC=cultivar/dist=n ddfm=kr;	
+    random run rep(run);	
+    lsmeans cultivar/ilink pdiff;	
+    %mult(trt=cultivar, alpha=0.05)	
+    run;
+
+/*Repeated Measures Analysis*/
+    /*Soybean Genotype Main Effect*/
+    %include '.../mult.sas';
+    Proc glimmix data=addscreen plots=studentpanel nobound;	
+    ods output lsmeans=lsmeans diffs=diffs;	
+    class run rep cultivar measurement;	
+    model lesion=cultivar|measurement/dist=n ddfm=kr;	
+    random run rep(run);
+    random _residual_ / subject=rep*cultivar type=cs;
+    lsmeans cultivar/ilink pdiff;	
+    %mult(trt=cultivar, alpha=0.05)	
+    run;
+
+    /*Measurement Main Effect*/
+    %include '.../mult.sas';
+    Proc glimmix data=addscreen plots=studentpanel nobound;	
+    ods output lsmeans=lsmeans diffs=diffs;	
+    class run rep cultivar measurement;	
+    model lesion=cultivar|measurement/dist=n ddfm=kr;	
+    random run rep(run);
+    random _residual_ / subject=rep*cultivar type=cs;
+    lsmeans measurement/ilink pdiff;	
+    %mult(trt=measurement, alpha=0.05)	
+    run;
+
+    /*Soybean Genotype and Measurement Two-Way Interaction*/
+    %include '.../mult.sas';
+    Proc glimmix data=addscreen plots=studentpanel nobound;	
+    ods output lsmeans=lsmeans diffs=diffs;	
+    class run rep cultivar measurement;	
+    model lesion=cultivar|measurement/dist=n ddfm=kr;	
+    random run rep(run);
+    random _residual_ / subject=rep*cultivar type=cs;
+    lsmeans cultivar*measurement/ilink pdiff;	
+    %mult(trt=measurement, by=cultivar, alpha=0.05)	
+    run;

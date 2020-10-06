@@ -1,0 +1,43 @@
+/*Code written by Richard W. Webster*/
+/*Evaluation of Commercial Cultivars under Field Conditions*/
+
+/*Commercial Cultivars w/ SSR Present*/
+    /*"WM Var Trial Disease Present.csv"*/
+    /*Yield*/
+        %include '/home/u47383690/Check Line Manuscript/mult.sas';	
+        Proc glimmix data=VarTrialPres plots=studentpanel nobound;
+        ods output lsmeans=lsmeans diffs=diffs;
+        class Env Rep Cult;
+        model Yieldkg = Cult/dist=n ddfm=kr;
+        Random Env rep(Env);
+        lsmeans Cult/ilink pdiff;
+        %mult(trt=Cult, alpha=0.5);
+        run;
+	
+	/*DIX*/
+        %include '/home/u47383690/Check Line Manuscript/mult.sas';	
+        Proc glimmix data=VarTrialPres plots=studentpanel nobound;
+        ods output lsmeans=lsmeans diffs=diffs;
+        class Env Rep Cult;
+        model DIX = Cult/dist=lognormal ddfm=kr;
+        Random Env rep(Env);
+        lsmeans Cult/ilink pdiff;
+        %mult(trt=Cult, alpha=0.5);
+        run;	
+
+/*Commercial Cultivars w/ SSR Absent*/
+    /*"WM Var Trial Disease Absent.csv"*/
+    /*Yield*/
+        %include '/home/u47383690/Check Line Manuscript/mult.sas';	
+        Proc glimmix data=VarTrialAbs plots=studentpanel nobound;
+        ods output lsmeans=lsmeans diffs=diffs;
+        class Env Rep Cult;
+        model Yieldkg = Cult/dist=n ddfm=kr;
+        Random Env rep(Env);
+        lsmeans Cult/ilink pdiff;
+        %mult(trt=Cult, alpha=0.5);
+        run;
+
+
+
+
