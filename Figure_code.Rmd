@@ -1,0 +1,404 @@
+---
+title: Figures for "Identification of Soybean Check Lines for Evaluating Genetic Resistance"
+  to Sclerotinia Stem Rot"
+author: "Richard W. Webster"
+date: "10/7/2020"
+output: 
+  md_document:
+    variant: markdown_github
+---
+
+## Import Packages
+```{r}
+#install.packages("ggplot2")
+library(ggplot2)
+#install.packages("ggpubr")
+library(ggpubr)
+#install.packages("cowpot")
+library(cowplot)
+#install.packages("viridis")
+library(viridis)
+```
+
+## Code is separated by sections of research in manuscript
+## All imported data was generated as means from SAS output from code provided
+
+## 1. "Identification and Screening of Check Lines"
+
+## Fig. 1 Importing and Organization of Data from Repeated Measures Analysis to create Disease Progress Curves
+```{r}
+## Means calculated from the soybean genotype by measurement interaction as performed in SAS
+cldrmcult <- read.table(text='cult	time	lesion	se	letter
+                            51-23	7	14.8128	6.155	c 
+                            51-23	11	31.8563	6.155	b 
+                            51-23	14	46.2676	6.155	a 
+                            52-82B	7	7.5096	6.155	b 
+                            52-82B	11	13.2167	6.155	b 
+                            52-82B	14	24.1289	6.155	a 
+                            Dwight	7	27.2615	6.155	c 
+                            Dwight	11	69.1669	6.155	b 
+                            Dwight	14	86.9754	6.155	a 
+                            SSR51-70	7	14.2434	6.1676	c 
+                            SSR51-70	11	30.2414	6.1676	b 
+                            SSR51-70	14	39.9871	6.1676	a', 
+                            header=T)
+## Means calculated from the Sclerotinia sclerotiorum isolate by measurement interaction as performed in SAS
+cldrmiso <- read.table(text='iso	time	lesion	se	letter
+                              3	7	5.1283	7.4516	a 
+                              3	11	7.0053	7.4516	a 
+                              3	14	7.9047	7.4516	a 
+                              10	7	18.3547	7.3987	c 
+                              10	11	48.3363	7.3987	b 
+                              10	14	61.8297	7.3987	a 
+                              15	7	13.6709	7.3987	c 
+                              15	11	30.2756	7.3987	b 
+                              15	14	50.0366	7.3987	a 
+                              19	7	19.69	7.3987	c 
+                              19	11	49.6153	7.3987	b 
+                              19	14	68.1528	7.3987	a 
+                              20	7	26.3028	7.3987	c 
+                              20	11	66.6966	7.3987	b 
+                              20	14	89.7109	7.3987	a 
+                              30	7	15.6416	7.3987	b 
+                              30	11	28.6669	7.3987	a 
+                              30	14	34.1166	7.3987	a 
+                              47	7	7.2503	7.3987	a 
+                              47	11	9.8016	7.3987	a 
+                              47	14	11.5028	7.3987	a 
+                              60	7	20.1213	7.3987	c 
+                              60	11	40.4444	7.3987	b 
+                              60	14	57.2403	7.3987	a 
+                              62	7	17.4516	7.3987	c 
+                              62	11	44.2409	7.3987	b 
+                              62	14	63.5634	7.3987	a 
+                              ', 
+                       header=T)
+cldrmiso$iso <- as.factor(cldrmiso$iso)
+```
+## Generation of Disease Progress Curves
+```{r}
+## Ordering of soybean genotypes
+cldrmcult$cult <- factor(cldrmcult$cult, levels = c("Dwight", "51-23", "SSR51-70", "52-82B"))     
+## Creation of Disease Progress Curves for four soybean genotypes across three measurements
+Fig1a <- ggplot(data=cldrmcult, aes(x=time, y=lesion, color=cult)) +
+          geom_point(size=5) +
+          geom_line(lwd=1.5) + 
+          ggtitle("Check Lines") + 
+          geom_errorbar(data=cldrmcult, aes(ymin=pmax(lesion-(se), 0), 
+                                            ymax=lesion+(se), 
+                                            width=0.1)) +
+          labs(x = "Days Post Inoculation",
+               y = "Lesion Length (mm)", 
+               color="Check Line") +
+          ylim(-5, 100) +
+          scale_x_continuous(breaks=c(7,11,14)) +
+          scale_color_viridis(option="viridis", discrete=T) +
+          theme_bw() +
+          theme(plot.title = element_text(hjust = 0.5,
+                                          face="bold",
+                                          size=14), 
+                axis.text.x = element_text(face="bold", 
+                                           size=14),
+                axis.text.y = element_text(face="bold", 
+                                           size=14),
+                axis.title = element_text(size=14),
+                legend.text = element_text(size=14),
+                legend.title = element_text(size=13))                            
+
+
+## Ordering of S. sclerotiorum isolates
+cldrmiso$iso <- factor(cldrmiso$iso, levels = c("20", "19", "62", "10", "60",
+                                                "15", "30", "47", "3"))
+## Creation of Disease Progress Curves for nine S. sclerotiorum isolates across three measurements
+Fig1b <- ggplot(data=cldrmiso, aes(x=time, y=lesion, color=iso)) +
+          geom_point(size=5) +
+          geom_line(lwd=1.5) + 
+          ggtitle("Sclerotinia sclerotiorum Isolates") + 
+          geom_errorbar(data=cldrmiso, aes(ymin=pmax(lesion-(se), 0), 
+                                           ymax=lesion+(se), 
+                                           width=0.1)) +
+          labs(x = "Days Post Inoculation",
+               y = "Lesion Length (mm)",
+               color = "Isolate") +
+          ylim(-5, 100) +
+          scale_x_continuous(breaks=c(7,11,14)) +
+          scale_color_viridis(option="viridis", discrete=T) +
+          theme_bw() +
+          theme(plot.title = element_text(hjust = 0.5, 
+                                          face="bold",
+                                          size=14), 
+                axis.text.x = element_text(face="bold", 
+                                           size=18),
+                axis.text.y = element_text(face="bold",
+                                           size=18),
+                axis.title = element_text(size=14),
+                legend.text = element_text(size=14),
+                legend.title = element_text(size=13))
+
+## Combining of Disease Progress Curves for both soybean genotype and S. sclerotiorum isolates
+ggdraw() +
+  draw_plot(Fig1a, 0.05, .5, .95, .48) +
+  draw_plot(Fig1b, 0.05, 0, .90, .48) +
+  draw_plot_label(c("A", "B"), c(0.05, 0.05), c(1.01, 0.51), size = 20)
+```
+
+## Fig. 2 Importing and Organization of Data from GLMM Analysis to create Area Under the Disease Progress Curve Graph
+```{r}
+## Means calculated from the soybean genotype main effect as performed in SAS
+cultaudpc <- read.table(text='cult	audpc	se	letter
+                                Dwight	5.66	0.1385	a
+                                51-23 4.976	0.1389	b
+                                SSR51-70  4.9518	0.1389	b
+                                52-82B	4.3183	0.1385	c',
+                          header=T)
+## Means calculated from the S. sclerotiorum isolate main effect as performed in SAS
+isoaudpc <- read.table(text='iso	audpc	se	letter
+                                20	5.7871	0.1645	a
+                                10	5.383	0.1645	b
+                                19	5.3726	0.1645	b
+                                60	5.3078	0.1645	bc
+                                62	5.3398	0.1645	bc
+                                15	5.0365	0.1645	cd
+                                30	4.7071	0.1645	d
+                                47	4.1677	0.1645	e
+                                3	3.6872	0.1676	f', 
+                         header=T)
+isoaudpc$iso <- as.factor(isoaudpc$iso)
+```
+## Generation of AUDPC Bar Charts
+```{r}
+## Creation of AUDPC bar charts for four soybean genotypes across three measurements
+Fig2a <- ggplot(cultaudpc, aes(x=reorder(cult, audpc), y=audpc, group=1, 
+                                  label=cultaudpc$letter)) +
+              geom_bar(stat="identity") +
+              coord_cartesian(ylim = c(3.5, 6.5)) +
+              geom_errorbar(data=cultaudpc, aes(ymin=pmax(pmax(audpc-(se),0),0), 
+                                                ymax=audpc+(se), 
+                                                width=0.1)) +
+              xlab("Check Line") +
+              ylab("AUDPC") +
+              theme_bw() +
+              theme(plot.title = element_text(hjust = 0.5, 
+                                              face="bold", 
+                                              size=15), 
+                    axis.text.x = element_text(face="bold",
+                                               size=14),
+                    axis.text.y = element_text(face="bold",
+                                               size=14)) + 
+              geom_text(vjust=-1.5, size=5)
+## Creation of AUDPC bar charts for nine S. sclerotiorum isolates across three measurements
+Fig2b <- ggplot(isoaudpc, aes(x=reorder(iso, audpc), y=audpc, group=1, 
+                              label=isoaudpc$letter)) +
+              geom_bar(stat="identity") +
+              coord_cartesian(ylim = c(3.5, 6.5)) +
+              geom_errorbar(data=isoaudpc, aes(ymin=pmax(pmax(audpc-(se),0),0), 
+                                               ymax=audpc+(se),
+                                               width=0.15)) +
+              xlab("Sclerotinia sclerotiorum\nIsolate") +
+              ylab("AUDPC") +
+              theme_bw() +
+              theme(plot.title = element_text(hjust = 0.5, 
+                                              face="bold",
+                                              size=15), 
+                    axis.text.x = element_text(face="bold", 
+                                               size=14),
+                    axis.text.y = element_text(face="bold",
+                                               size=14)) + 
+              geom_text(vjust=-1.5, size=5)
+
+## Combining of AUDPC bar charts for both soybean genotype and S. sclerotiorum isolates
+ggarrange(Fig2a, Fig2b,  
+          labels = c("A", "B"),
+          ncol = 1,
+          nrow = 2,
+          heights = 0.5)
+```
+
+## 2. "Validation of Soybean Check Panel and Evaluation of SSR Resistance in Commercial Soybean Cultivars"
+
+## Fig. 3 Importing, Organization, and Subsetting of Data from Repeated Measures Analysis to create Disease Progress Curves
+```{r}
+## Means calculated from the soybean genotype main effect as performed in SAS
+  csdpc <- read.table(text='cult	time	lesion 	se	letter
+                            1212R2X	7	12.0825	16.2505	b
+                            1212R2X	11	40.105	16.2505	ab 
+                            1212R2X	14	70.9713	16.2505	a 
+                            3115L	7	18.4333	16.2505	b 
+                            3115L	11	46.2225	16.2505	ab 
+                            3115L	14	73.1062	16.2505	a 
+                            386-14-1	7	42.5981	16.2505	c 
+                            386-14-1	11	92.0419	16.2505	b 
+                            386-14-1	14	132.12	16.2505	a 
+                            386-48-3	7	32.4654	16.2505	c 
+                            386-48-3	11	92.1092	16.2505	b 
+                            386-48-3	14	151.88	16.2505	a 
+                            386-56-1	7	39.0013	16.2505	c 
+                            386-56-1	11	105.52	16.2505	b 
+                            386-56-1	14	161.21	16.2505	a 
+                            386-61-3	7	27.0671	16.2505	c 
+                            386-61-3	11	93.4617	16.2505	b 
+                            386-61-3	14	166.99	16.2505	a 
+                            386-62-1	7	45.2275	16.2505	c 
+                            386-62-1	11	109.81	16.2505	b 
+                            386-62-1	14	173.78	16.2505	a 
+                            51-23	7	16.9779	16.2505	b
+                            51-23	11	50.0856	16.2505	b
+                            51-23	14	113.82	16.2505	a
+                            52-82B	7	11.2825	16.2505	b
+                            52-82B	11	30.3817	16.2505	ab 
+                            52-82B	14	52.7117	16.2505	a 
+                            Dwight	7	35.6135	16.2505	c 
+                            Dwight	11	110.34	16.2505	b 
+                            Dwight	14	176.44	16.2505	a
+                            LS1172LLN	7	27.4508	16.2505	b
+                            LS1172LLN	11	75.6217	16.2505	a
+                            LS1172LLN	14	109.05	16.2505	a
+                            LS23X6632N	7	15.0963	40.677	a
+                            LS23X6632N	11	15.9463	40.677	a
+                            LS23X6632N	14	23.0063	40.677	a
+                            SSR51-70	7	15.2469	16.2505	b
+                            SSR51-70	11	53.3946	16.2505	a
+                            SSR51-70	14	87.2119	16.2505	a
+                            W82	7	35.606	16.2505	c 
+                            W82	11	97.2865	16.2505	b
+                            W82	14	174.08	16.2505	a
+                            WS16-9138	7	16.3581	16.2505	b
+                            WS16-9138	11	42.341	16.2505	b
+                            WS16-9138	14	93.7117	16.2505	a'
+                            , header=T)
+                  
+## Subsetting the four check lines and the five commercial and public cultivars
+csdpcComm <- subset(csdpc, cult=="Dwight"|cult=="SSR51-70"|cult=="51-23"|cult=="52-82B"|
+                             cult=="1212R2X"|cult=="3115L"|cult=="LS1172LLN"|cult=="LS23X6632N"|
+                             cult=="WS16-9138")
+## Subsetting the four check lines and the experimental lines 
+csdpcExp <- subset(csdpc, cult=="Dwight"|cult=="SSR51-70"|cult=="51-23"|cult=="52-82B"|
+                             cult=="386-14-1"|cult=="386-48-3"|cult=="386-56-1"|cult=="386-61-3"|
+                             cult=="386-62-1"|cult=="W82")
+
+  
+```
+
+## Generation of Disease Progress Curves
+```{r}
+## Ordering of soybean genotypes
+csdpcComm$cult <- factor(csdpcComm$cult, levels = c("Dwight","51-23","LS1172LLN","WS16-9138",
+                                                    "SSR51-70","3115L","1212R2X","52-82B",
+                                                    "LS23X6632N"))
+## Creation of Disease Progress Curves for four soybean check lines and five cultivars across three measurements
+Fig3a <- ggplot(data=csdpcComm, aes(x=time, y=lesion, color=cult)) +
+          geom_point(size=5) +
+          geom_line(lwd=1.5) + 
+          ggtitle("Commerical Lines") + 
+          geom_errorbar(data=csdpcComm, aes(ymin=pmax(lesion-(se),0), 
+                                            ymax=lesion+(se), 
+                                            width=0.1)) +
+          labs(x = "Days Post Inoculation",
+               y = "Lesion Length (mm)", 
+               color = "Genotype") +
+          ylim(-5, 200) +
+          scale_x_continuous(breaks=c(7,11,14)) +
+          scale_color_viridis(option="viridis", discrete=T) +
+          theme_bw() +
+          theme(plot.title = element_text(hjust = 0.5, 
+                                          face="bold",
+                                          size=14), 
+                axis.text.x = element_text(face="bold",
+                                           size=14),
+                axis.text.y = element_text(face="bold",
+                                           size=14),
+                axis.title = element_text(size=14),
+                legend.text = element_text(size=14),
+                legend.title = element_text(size=13)) 
+
+## Ordering of soybean genotypes
+csdpcExp$cult <- factor(csdpcExp$cult, levels = c("Dwight","W82","386-62-1","386-61-3","386-56-1",
+                                                  "386-48-3","386-14-1","51-23", "SSR51-70",
+                                                  "52-82B"))
+## Creation of Disease Progress Curves for four soybean check lines and experimental lines across three measurements
+Fig3b <- ggplot(data=csdpcExp, aes(x=time, y=lesion, color=cult)) +
+          geom_point(size=5) +
+          geom_line(lwd=1.5) + 
+          ggtitle("Experimental Lines") + 
+          geom_errorbar(data=csdpcExp, aes(ymin=pmax(lesion-(se),0),
+                                           ymax=lesion+(se),
+                                           width=0.1)) +
+          labs(x = "Days Post Inoculation",
+               y = "Lesion Length (mm)",
+               color = "Genotype") +
+          ylim(-5, 200) +
+          scale_x_continuous(breaks=c(7,11,14)) +
+          scale_color_viridis(option="viridis", discrete=T) +
+          theme_bw() +
+          theme(plot.title = element_text(hjust = 0.5, 
+                                          face="bold", 
+                                          size=14), 
+                axis.text.x = element_text(face="bold", 
+                                           size=14),
+                axis.text.y = element_text(face="bold",
+                                           size=14),
+                axis.title = element_text(size=14),
+                legend.text = element_text(size=14),
+                legend.title = element_text(size=13)) 
+
+## Combining of Disease Progress Curves for both subsets of soybean genotypes (cultivars and experimental lines)
+ggdraw() +
+  draw_plot(Fig3a, 0.05, .5, .91, .48) +
+  draw_plot(Fig3b, 0.05, 0, .9, .48) +
+  draw_plot_label(c("A", "B"), c(0.05, 0.05), c(1.01, 0.51), size = 20)
+```
+
+## Fig. 4 Importing and Organization of Data from GLMM Analysis to create Area Under the Disease Progress Curve Graph
+```{r}
+## Means calculated from the soybean genotype main effect as performed in SAS
+csaudpc <- read.table(text='cult	mean	se	letter 
+                            LS23X663N	137.68	234.67	cd
+                            52-82B	213.61	96.0488	d
+                            1212R2X	277.03	96.0488	cd
+                            3115L	317.52	96.0488	cd
+                            WS16-9138	329.66	96.0488	cd
+                            SSR51-70	355.82	96.0488	cd
+                            51-23	388.48	96.0488	cd
+                            LS1172LLN	496.87	96.0488	bc
+                            386-14-1	626.82	96.0488	ab
+                            386-48-3	631.36	96.0488	ab
+                            386-61-3	645.26	96.0488	ab
+                            Williams82	690.64	96.0488	ab
+                            386-56-1	708.64	96.0488	ab
+                            Dwight	739.9	96.0488	a
+                            386-62-1	758.08	96.0488	a',
+                            header=T)
+```
+
+```{r}
+## Creation of Area under the disease progress curve bar chart
+Fig4 <- ggplot(data=csaudpc, aes(x=reorder(cult, mean), y=mean, 
+                                label=csaudpc$letter)) +
+      geom_bar(stat="identity", fill = (ifelse(csaudpc$cult=="52-82B" & !is.na(csaudpc$cult) | 
+                                               csaudpc$cult == "51-23" & !is.na(csaudpc$cult) |
+                                               csaudpc$cult =="Dwight" & !is.na(csaudpc$cult) |
+                                               csaudpc$cult =="SSR51-70", 
+                                               "gray", "gray34"))) +
+      geom_errorbar(data=csaudpc, aes(ymin=pmax(mean-(se), 0), 
+                                      ymax=mean+(se), 
+                                      width=0.3)) +
+      geom_text(vjust=-1, 
+                y=csaudpc$mean+(csaudpc$se), 
+                size=6) +
+      xlab("Genotype") +
+      ylab("AUDPC") + 
+      ylim(0, 900) +
+      theme_bw() +
+      theme(axis.text.x = element_text(face="bold", 
+                                       size=14, 
+                                       angle=45,
+                                       hjust=1),
+            axis.text.y = element_text(face="bold",
+                                       size=14), 
+            axis.title.x = element_text(face="bold", 
+                                        size=15), 
+            axis.title.y = element_text(face="bold",
+                                        size=15),
+            legend.position = "none")
+```
+
